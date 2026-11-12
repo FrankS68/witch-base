@@ -47,3 +47,7 @@ Für den Zugriff auf witch-auth aus GitHub Packages braucht `~/.m2/settings.xml`
 ## Eclipse
 
 Die `pom.xml` enthält schon die nötigen m2e-Workarounds (`maven-jar-plugin` 3.4.2, Vaadin-Frontend-Goals werden im Eclipse-Build übersprungen).
+
+## Lizenz
+
+[Apache License 2.0](LICENSE) – Copyright 2026 Frank Segieth.
