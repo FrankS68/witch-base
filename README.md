@@ -2,25 +2,84 @@
 
 Basis für neue WitchCafe-Projekte: Vaadin 25 + Spring Boot 4 + Login über [witch-auth](https://github.com/FrankS68/witch-auth) (OAuth2: Google, GitHub, Facebook, Microsoft …).
 
-Enthalten ist alles, was jedes Projekt braucht, aber keine fachlichen Entities, Services oder Views:
+Das Repository enthält drei Maven-Module:
 
 ```
-src/main/java/de/witchcafe/app
-├── Application.java          Spring-Boot-Start, scannt de.witchcafe (App + witch-auth)
-├── base/ui
-│   ├── MainLayout.java       AppLayout mit Menü (aus @Menu), Login-Link / Benutzermenü
-│   ├── ViewToolbar.java      Kopfzeile für Views
-│   └── HomeView.java         Platzhalter-Startseite ("/")
-└── admin
-    ├── UserAdminView.java            Benutzerverwaltung (Rolle ADMIN)
-    └── ProviderCredentialsView.java  Status der OAuth-Provider (Rolle ADMIN)
+witch-parent/   Parent-POM fuer alle Apps: Versionen (Java, Spring Boot, Vaadin, witch-auth, witch-ui),
+                Standard-Abhaengigkeiten, Plugin-Konfiguration, Repositories
+witch-ui/       Bibliothek mit der gemeinsamen Oberflaeche (Paket de.witchcafe.ui)
+  ├── MainLayout                     AppLayout mit Menü (aus @Menu), Login-Link / Benutzermenü
+  ├── ViewToolbar                    Kopfzeile für Views
+  └── admin/
+      ├── UserAdminView              Benutzerverwaltung (Rolle ADMIN)
+      └── ProviderCredentialsView    Status der OAuth-Provider (Rolle ADMIN)
+template/       Vorlage fuer neue Apps (Application, HomeView, styles.css)
 ```
+
+`./mvnw install` im Wurzelverzeichnis baut alles und installiert `witch-parent` und `witch-ui`
+ins lokale Maven-Repository.
+
+### Eine App auf witch-parent aufsetzen
+
+```xml
+<parent>
+    <groupId>de.witchcafe</groupId>
+    <artifactId>witch-parent</artifactId>
+    <version>1.0.0</version>
+    <relativePath/>
+</parent>
+
+<dependencies>
+    <dependency>
+        <groupId>de.witchcafe</groupId>
+        <artifactId>witch-ui</artifactId>
+    </dependency>
+</dependencies>
+
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+        <plugin>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-maven-plugin</artifactId>
+        </plugin>
+    </plugins>
+</build>
+
+<!-- damit Maven witch-parent selbst findet -->
+<repositories>
+    <repository>
+        <id>github</id>
+        <url>https://maven.pkg.github.com/FrankS68/witch-auth</url>
+        <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+</repositories>
+```
+
+Ein Upgrade von Vaadin, Spring Boot oder witch-auth passiert dann nur noch in `witch-parent`
+(neue Version) und in jeder App durch Hochziehen der Parent-Version. Feste Versionen statt
+`-SNAPSHOT`, damit sich nichts unbemerkt ändert.
+
+### witch-ui konfigurieren (application.properties)
+
+```properties
+witch-ui.title=Meine App              # Kopfzeile; {name} = angemeldeter Benutzer (Default "Moin {name}")
+witch-ui.admin.users.enabled=false    # eigene Benutzerverwaltung statt UserAdminView
+witch-ui.admin.providers.enabled=false
+```
+
+Die App muss `de.witchcafe` scannen (`@ComponentScan`, `@EnableVaadin`, `vaadin.allowed-packages`),
+siehe `template/.../Application.java`.
 
 ## Neues Projekt daraus machen
 
-1. Ordner kopieren (ohne `target/`, `node_modules/`, `.git/`) und umbenennen.
-2. In `pom.xml` die `artifactId` (und ggf. `groupId`) anpassen.
-3. In `application.properties` `witch-auth.app-name` und `witch-auth.app-icon` setzen.
+1. Ordner `template/` kopieren (ohne `target/`, `node_modules/`) und umbenennen.
+2. In `pom.xml` die `artifactId` anpassen und im `<parent>` `<relativePath/>` leer setzen;
+   den `github`-Repository-Eintrag von oben ergänzen.
+3. In `application.properties` `witch-auth.app-name`, `witch-auth.app-icon` und `witch-ui.title` setzen.
 4. Eigene Features als Pakete unter `de.witchcafe.app` anlegen (z.B. `de.witchcafe.app.quiz`)
    mit Entity, Repository, Service und `ui/`-Views. Views mit `@Menu` erscheinen automatisch im Menü.
 5. `HomeView` ersetzen oder anpassen.

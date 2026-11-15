@@ -1,3 +1,4 @@
+# Build aus dem Repository-Wurzelverzeichnis: docker build -f template/Dockerfile .
 FROM ghcr.io/jqlang/jq:latest AS jq-stage
 
 FROM eclipse-temurin:21-jdk AS build
@@ -23,8 +24,8 @@ RUN --mount=type=cache,target=/root/.m2 \
     --mount=type=secret,id=offlineKey \
     sh -c 'PRO_KEY=$(jq -r ".proKey // empty" /run/secrets/proKey 2>/dev/null || echo "") && \
     OFFLINE_KEY=$(cat /run/secrets/offlineKey 2>/dev/null || echo "") && \
-    ./mvnw clean package -DskipTests -Dvaadin.proKey=${PRO_KEY} -Dvaadin.offlineKey=${OFFLINE_KEY}'
+    ./mvnw clean package -pl template -am -DskipTests -Dvaadin.proKey=${PRO_KEY} -Dvaadin.offlineKey=${OFFLINE_KEY}'
 
 FROM eclipse-temurin:21-jre-alpine
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/template/target/*.jar app.jar
 ENTRYPOINT ["java", "-jar", "/app.jar", "--spring.profiles.active=prod"]

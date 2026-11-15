@@ -1,4 +1,4 @@
-package de.witchcafe.app.base.ui;
+package de.witchcafe.ui;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;

@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Gemeinsamer Parent fuer alle WitchCafe-Apps (Vaadin + Spring Boot + witch-auth).
+
+        Einbinden:
+            <parent>
+                <groupId>de.witchcafe</groupId>
+                <artifactId>witch-parent</artifactId>
+                <version>1.0.0</version>
+                <relativePath/>
+            </parent>
+
+        Bringt mit: Versionen (Java, Spring Boot, Vaadin, witch-auth, witch-ui), die
+        Standard-Abhaengigkeiten (Vaadin, Security, OAuth2-Client, JPA + H2 fuer die
+        witch-auth-Benutzerdaten, witch-auth), Plugin-Konfiguration und Repositories.
+
+        Eine App deklariert selbst nur noch:
+          - <dependency> de.witchcafe:witch-ui (ohne Version), wenn sie MainLayout/Admin-Views nutzt
+          - <plugins> spring-boot-maven-plugin und vaadin-maven-plugin (ohne Konfiguration)
+          - ihre fachlichen Abhaengigkeiten
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.1.1</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>de.witchcafe</groupId>
+    <artifactId>witch-parent</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>witch-parent</name>
+
+    <properties>
+        <java.version>21</java.version>
+        <vaadin.version>25.3.0</vaadin.version>
+        <witch-auth.version>1.0.0-SNAPSHOT</witch-auth.version>
+        <witch-ui.version>1.0.0</witch-ui.version>
+        <!-- maven-jar-plugin 3.5.x (Default ab Spring Boot 4.1) laeuft nicht in Eclipse/m2e:
+             "Cannot access Key[...MavenProject...] outside of a scoping block" -->
+        <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+        <maven.deploy.skip>false</maven.deploy.skip>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <version>${vaadin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>de.witchcafe</groupId>
+                <artifactId>witch-auth</artifactId>
+                <version>${witch-auth.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>de.witchcafe</groupId>
+                <artifactId>witch-ui</artifactId>
+                <version>${witch-ui.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <!-- vaadin-core statt vaadin, wenn nur freie Komponenten genutzt werden sollen -->
+            <artifactId>vaadin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-spring-boot-starter</artifactId>
+        </dependency>
+        <!-- JPA + H2: Benutzerdaten von witch-auth -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.witchcafe</groupId>
+            <artifactId>witch-auth</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <defaultGoal>spring-boot:run</defaultGoal>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.vaadin</groupId>
+                    <artifactId>vaadin-maven-plugin</artifactId>
+                    <version>${vaadin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>build-frontend</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!-- Nur fuer Eclipse/m2e: prepare-frontend nicht im inkrementellen
+                     Eclipse-Build ausfuehren (sonst "Cannot access Key[...MavenProject...]
+                     outside of a scoping block"). Vaadin erledigt das beim App-Start selbst. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>com.vaadin</groupId>
+                                        <artifactId>vaadin-maven-plugin</artifactId>
+                                        <versionRange>[1.0,)</versionRange>
+                                        <goals>
+                                            <goal>prepare-frontend</goal>
+                                            <goal>build-frontend</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore/>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <!-- Veroeffentlichen (mvn deploy im Wurzelverzeichnis von witch-base) nach GitHub Packages,
+         in dasselbe Repository wie witch-auth: Apps brauchen dann nur eine Repository-URL.
+         Token mit write:packages in ~/.m2/settings.xml (server-id "github"). -->
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub FrankS68 Maven Packages</name>
+            <url>https://maven.pkg.github.com/FrankS68/witch-auth</url>
+        </repository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>vaadin-directory</id>
+            <url>https://maven.vaadin.com/vaadin-addons</url>
+        </repository>
+        <!-- GitHub Packages: witch-auth, witch-parent, witch-ui (Token in ~/.m2/settings.xml, server-id "github") -->
+        <repository>
+            <id>github</id>
+            <name>GitHub FrankS68 Maven Packages</name>
+            <url>https://maven.pkg.github.com/FrankS68/witch-auth</url>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+    </repositories>
+</project>
