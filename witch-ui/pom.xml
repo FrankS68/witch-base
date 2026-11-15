@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+        Gemeinsame Oberflaeche fuer WitchCafe-Apps:
+          - de.witchcafe.ui.MainLayout      AppLayout mit Menue aus @Menu, Login-Link / Benutzermenue
+          - de.witchcafe.ui.ViewToolbar     Kopfzeile fuer Views
+          - de.witchcafe.ui.admin.*         Benutzerverwaltung und OAuth-Provider-Status (Rolle ADMIN)
+        Wird von Apps gefunden, die de.witchcafe scannen (@ComponentScan / @EnableVaadin).
+    -->
+    <parent>
+        <groupId>de.witchcafe</groupId>
+        <artifactId>witch-parent</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../witch-parent</relativePath>
+    </parent>
+
+    <artifactId>witch-ui</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    <name>witch-ui</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <!-- Vaadin scannt das Jar beim Frontend-Build nach Komponenten -->
+                            <Vaadin-Package-Version>1</Vaadin-Package-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

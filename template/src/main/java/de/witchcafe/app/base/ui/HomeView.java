@@ -8,6 +8,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
+import de.witchcafe.ui.ViewToolbar;
+
 /**
  * Startseite der Basis-Anwendung. In einem neuen Projekt durch die eigene
  * Startseite ersetzen.

@@ -1,4 +1,4 @@
-package de.witchcafe.app.admin;
+package de.witchcafe.ui.admin;
 
 import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.router.Menu;
