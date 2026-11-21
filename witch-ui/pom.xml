@@ -12,12 +12,12 @@
     <parent>
         <groupId>de.witchcafe</groupId>
         <artifactId>witch-parent</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
         <relativePath>../witch-parent</relativePath>
     </parent>
 
     <artifactId>witch-ui</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
     <name>witch-ui</name>
 

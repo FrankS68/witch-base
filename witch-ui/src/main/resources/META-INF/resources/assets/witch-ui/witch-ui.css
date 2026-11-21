@@ -1,0 +1,45 @@
+/*
+ * witch-ui: gemeinsame Regeln fuer schmale Bildschirme (Smartphone).
+ * Wird von MainLayout per @StyleSheet geladen; liegt unter /assets/, damit es
+ * auch ohne Anmeldung ausgeliefert wird.
+ *
+ * Grenze Handy/Desktop: 600px = Responsive.MOBILE_MAX_WIDTH (beide gleich halten!)
+ */
+
+/* Titel in der Kopfzeile: kuerzen statt ueberlaufen */
+.witch-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0 var(--lumo-space-m);
+    font-size: var(--lumo-font-size-l);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Feste Breite (z. B. setWidth("28em")) behalten, aber nie breiter als der Platz: Responsive.fit() */
+.witch-fit {
+    max-width: 100% !important;
+}
+
+/* Bilder und Medien nie breiter als ihr Platz */
+img, video, svg, canvas {
+    max-width: 100%;
+}
+
+@media (max-width: 599.98px) {
+    .witch-hide-mobile {
+        display: none !important;
+    }
+
+    .witch-title {
+        margin: 0 var(--lumo-space-s);
+        font-size: var(--lumo-font-size-m);
+    }
+}
+
+@media (min-width: 600px) {
+    .witch-mobile-only {
+        display: none !important;
+    }
+}

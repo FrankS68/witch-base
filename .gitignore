@@ -10,7 +10,11 @@ target/
 
 # The following files are generated/updated by vaadin-maven-plugin
 node_modules/
-src/main/frontend/generated/
+**/src/main/frontend/generated/
+**/src/main/bundles/
+
+# Eclipse/m2e
+.eclipse/
 vite.generated.ts
 
 # Lokale Secrets

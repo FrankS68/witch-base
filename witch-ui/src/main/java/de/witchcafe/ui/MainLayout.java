@@ -6,6 +6,7 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.avatar.AvatarVariant;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.Icon;
@@ -33,8 +34,11 @@ import de.witchcafe.auth.oauth2.OAuthLoginView;
  *
  * Titel in der Kopfzeile ueber {@code witch-ui.title} (application.properties);
  * {@code {name}} wird durch den Namen des angemeldeten Benutzers bzw. "Gast" ersetzt.
+ *
+ * Laedt {@code witch-ui.css} mit den Regeln fuer schmale Bildschirme, siehe {@link Responsive}.
  */
 @Layout
+@StyleSheet("assets/witch-ui/witch-ui.css")
 @AnonymousAllowed
 public class MainLayout extends AppLayout {
 
@@ -55,9 +59,8 @@ public class MainLayout extends AppLayout {
     private void createHeader(CurrentUser currentUser, String title) {
         String name = currentUser.get().map(AppUserInfo::getFullName).orElse("Gast");
         H1 logo = new H1(title.replace("{name}", name));
-        logo.addClassNames(
-            LumoUtility.FontSize.LARGE,
-            LumoUtility.Margin.MEDIUM);
+        // witch-title: auf dem Handy kleiner und mit "…" gekuerzt statt ueberzulaufen
+        logo.addClassName("witch-title");
 
         // Der DrawerToggle ist der "Hamburger"-Button für Mobilgeräte
         // addToNavbar(true, ...) bedeutet: optimiert für Touch/Mobil

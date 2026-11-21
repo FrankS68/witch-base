@@ -10,6 +10,7 @@ witch-parent/   Parent-POM fuer alle Apps: Versionen (Java, Spring Boot, Vaadin,
 witch-ui/       Bibliothek mit der gemeinsamen Oberflaeche (Paket de.witchcafe.ui)
   ├── MainLayout                     AppLayout mit Menü (aus @Menu), Login-Link / Benutzermenü
   ├── ViewToolbar                    Kopfzeile für Views
+  ├── Responsive                     Helfer fürs Smartphone (Grid, Dialog, FormLayout, Breiten)
   └── admin/
       ├── UserAdminView              Benutzerverwaltung (Rolle ADMIN)
       └── ProviderCredentialsView    Status der OAuth-Provider (Rolle ADMIN)
@@ -25,7 +26,7 @@ ins lokale Maven-Repository.
 <parent>
     <groupId>de.witchcafe</groupId>
     <artifactId>witch-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <relativePath/>
 </parent>
 
@@ -59,6 +60,11 @@ ins lokale Maven-Repository.
 </repositories>
 ```
 
+Soll die App auch in sozialen Netzwerken lesen und posten, statt `witch-parent` den Parent
+`de.witchcafe:witch-social-parent` aus [witch-social](https://github.com/FrankS68/witch-social)
+nehmen und die Netzwerke als Module dazunehmen (`witch-bluesky`, `witch-mastodon`, `witch-meta`,
+`witch-pinterest`).
+
 Ein Upgrade von Vaadin, Spring Boot oder witch-auth passiert dann nur noch in `witch-parent`
 (neue Version) und in jeder App durch Hochziehen der Parent-Version. Feste Versionen statt
 `-SNAPSHOT`, damit sich nichts unbemerkt ändert.
@@ -73,6 +79,25 @@ witch-ui.admin.providers.enabled=false
 
 Die App muss `de.witchcafe` scannen (`@ComponentScan`, `@EnableVaadin`, `vaadin.allowed-packages`),
 siehe `template/.../Application.java`.
+
+### Smartphone (Responsive)
+
+`MainLayout` lädt `assets/witch-ui/witch-ui.css`. Unter 600px Fensterbreite gilt die Handy-Ansicht
+(`Responsive.MOBILE_MAX_WIDTH`, dieselbe Grenze steht im CSS). Statt fester Breiten in den Views:
+
+```java
+Responsive.maxWidth(suchfeld, "24em");                 // statt setWidth("24em")
+Responsive.wrappingRow(zeile);                         // Eingabezeile bricht um, Felder passen sich an
+Responsive.fit(filterBox);                             // feste Breite, aber nie breiter als der Platz
+Responsive.dialog(dialog, "40em");                     // statt dialog.setWidth("40em")
+Responsive.twoColumns(formLayout);                     // 1 Spalte, ab 32em Formularbreite 2
+Responsive.hideOnMobile(grid, datumSpalte, autorSpalte);
+Responsive.mobileCardColumn(grid, new ComponentRenderer<>(item -> karte(item)));
+Responsive.hiddenOnMobile(button);                     // per CSS ausblenden
+Responsive.onMobileChange(view, mobile -> ...);        // eigene Umschaltung, auch beim Drehen
+```
+
+CSS-Klassen für eigene Styles: `witch-hide-mobile`, `witch-mobile-only`, `witch-fit`.
 
 ## Neues Projekt daraus machen
 

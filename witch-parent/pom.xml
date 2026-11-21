@@ -9,7 +9,7 @@
             <parent>
                 <groupId>de.witchcafe</groupId>
                 <artifactId>witch-parent</artifactId>
-                <version>1.0.0</version>
+                <version>1.1.0</version>
                 <relativePath/>
             </parent>
 
@@ -31,7 +31,7 @@
 
     <groupId>de.witchcafe</groupId>
     <artifactId>witch-parent</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>pom</packaging>
     <name>witch-parent</name>
 
@@ -39,7 +39,7 @@
         <java.version>21</java.version>
         <vaadin.version>25.3.0</vaadin.version>
         <witch-auth.version>1.0.0-SNAPSHOT</witch-auth.version>
-        <witch-ui.version>1.0.0</witch-ui.version>
+        <witch-ui.version>1.1.0</witch-ui.version>
         <!-- maven-jar-plugin 3.5.x (Default ab Spring Boot 4.1) laeuft nicht in Eclipse/m2e:
              "Cannot access Key[...MavenProject...] outside of a scoping block" -->
         <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
