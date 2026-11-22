@@ -19,3 +19,6 @@ vite.generated.ts
 
 # Lokale Secrets
 application-local.properties
+
+# OAuth-Zugangsdaten aus der Secret-Wartung (witch-auth)
+**/config/oauth-credentials.properties
