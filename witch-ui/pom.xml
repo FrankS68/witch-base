@@ -4,7 +4,7 @@
 
     <!--
         Gemeinsame Oberflaeche fuer WitchCafe-Apps:
-          - de.witchcafe.ui.MainLayout      AppLayout mit Menue aus @Menu, Login-Link / Benutzermenue
+          - de.witchcafe.ui.MainLayout      AppLayout mit Menue aus @Menu (gruppiert, siehe MenuGroup), Login-Link / Benutzermenue
           - de.witchcafe.ui.ViewToolbar     Kopfzeile fuer Views
           - de.witchcafe.ui.admin.*         Benutzerverwaltung und OAuth-Provider-Status (Rolle ADMIN)
         Wird von Apps gefunden, die de.witchcafe scannen (@ComponentScan / @EnableVaadin).
@@ -17,7 +17,7 @@
     </parent>
 
     <artifactId>witch-ui</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <packaging>jar</packaging>
     <name>witch-ui</name>
 

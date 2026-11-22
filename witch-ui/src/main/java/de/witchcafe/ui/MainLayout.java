@@ -1,5 +1,10 @@
 package de.witchcafe.ui;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -12,7 +17,9 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.Layout;
@@ -30,7 +37,10 @@ import de.witchcafe.auth.oauth2.OAuthLoginView;
 
 /**
  * Gemeinsames App-Layout: Kopfzeile, Menue aus allen {@code @Menu}-Views (nach
- * Zugriffsrechten gefiltert) und unten im Drawer Login-Link bzw. Benutzermenue.
+ * Zugriffsrechten gefiltert, gruppiert nach {@link MenuGroup}) und unten im Drawer
+ * Login-Link bzw. Benutzermenue.
+ *
+ * Der DrawerToggle sitzt nur hier neben dem Anwendungstitel, nicht im {@link ViewToolbar}.
  *
  * Titel in der Kopfzeile ueber {@code witch-ui.title} (application.properties);
  * {@code {name}} wird durch den Namen des angemeldeten Benutzers bzw. "Gast" ersetzt.
@@ -68,21 +78,71 @@ public class MainLayout extends AppLayout {
     }
 
     private void createDrawer() {
-        // Die Navigation als SideNav (neue Komponente in Vaadin 24)
-        SideNav nav = createSideNav();
+        // Menue nach Gruppen (Anwendung, Social, Billing, ..., Admin), je Gruppe eine SideNav
+        var menu = new VerticalLayout();
+        menu.setPadding(false);
+        menu.setSpacing(true);
+        menu.setDefaultHorizontalComponentAlignment(FlexComponent.Alignment.STRETCH);
+        var groups = groupMenuEntries(MenuConfiguration.getMenuEntries());
+        boolean withLabels = groups.size() > 1;
+        groups.forEach((group, entries) -> menu.add(createSideNav(withLabels ? group : null, entries)));
 
         // Scroller sorgt dafür, dass das Menü scrollbar ist, wenn es zu viele Items sind
-        Scroller scroller = new Scroller(nav);
+        Scroller scroller = new Scroller(menu);
         scroller.setClassName(LumoUtility.Padding.SMALL);
 
         addToDrawer(scroller);
     }
 
-	private SideNav createSideNav() {
-	    var nav = new SideNav();
-	    MenuConfiguration.getMenuEntries().forEach(entry -> nav.addItem(createSideNavItem(entry)));
-	    return nav;
-	}
+    /**
+     * Teilt die (bereits nach Rechten gefilterten und sortierten) Menueeintraege in Gruppen auf.
+     * Leere Gruppen fallen weg; Admin steht immer am Ende.
+     */
+    static Map<String, List<MenuEntry>> groupMenuEntries(List<MenuEntry> entries) {
+        Map<String, List<MenuEntry>> groups = new LinkedHashMap<>();
+        for (String group : List.of(MenuGroup.APP, MenuGroup.SOCIAL, MenuGroup.BILLING)) {
+            groups.put(group, new ArrayList<>());
+        }
+        entries.forEach(entry -> groups.computeIfAbsent(groupOf(entry), g -> new ArrayList<>()).add(entry));
+        List<MenuEntry> admin = groups.remove(MenuGroup.ADMIN);
+        if (admin != null) {
+            groups.put(MenuGroup.ADMIN, admin);
+        }
+        groups.values().removeIf(List::isEmpty);
+        return groups;
+    }
+
+    static String groupOf(MenuEntry entry) {
+        Class<?> view = entry.menuClass();
+        if (view != null) {
+            MenuGroup annotation = view.getAnnotation(MenuGroup.class);
+            if (annotation != null) {
+                return annotation.value();
+            }
+            String pkg = view.getPackageName();
+            if (pkg.startsWith("de.witchcafe.social")) {
+                return MenuGroup.SOCIAL;
+            }
+            if (pkg.startsWith("de.witchcafe.billing")) {
+                return MenuGroup.BILLING;
+            }
+        }
+        String path = entry.path() == null ? "" : entry.path().replaceFirst("^/+", "");
+        if (path.equals("admin") || path.startsWith("admin/")) {
+            return MenuGroup.ADMIN;
+        }
+        return MenuGroup.APP;
+    }
+
+    private SideNav createSideNav(String label, List<MenuEntry> entries) {
+        var nav = new SideNav();
+        if (label != null) {
+            nav.setLabel(label);
+            nav.setCollapsible(true);
+        }
+        entries.forEach(entry -> nav.addItem(createSideNavItem(entry)));
+        return nav;
+    }
 
 	private SideNavItem createSideNavItem(MenuEntry menuEntry) {
 	    if (menuEntry.icon() != null) {
