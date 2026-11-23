@@ -11,6 +11,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * Kopfzeile einer View: Seitentitel links, Aktionen rechts.
  *
+ * {@link MainLayout} holt sie nach dem Seitenwechsel in die obere Leiste neben den
+ * Anwendungstitel ({@code witch-ui.toolbar-in-header}, Default true). Deshalb Suchfeld und
+ * Knoepfe einer View als {@code components} uebergeben statt in eine eigene Zeile darunter.
+ *
  * Ohne eigenen DrawerToggle - den gibt es nur einmal im {@link MainLayout} neben dem Anwendungstitel.
  */
 public final class ViewToolbar extends Composite<HorizontalLayout> {
@@ -21,10 +25,12 @@ public final class ViewToolbar extends Composite<HorizontalLayout> {
         layout.setWrap(true);
         layout.setWidthFull();
         layout.addClassName(LumoUtility.Border.BOTTOM);
+        layout.addClassName("witch-view-toolbar");
         layout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
 
         var title = new H1(viewTitle);
         title.addClassNames(LumoUtility.FontSize.XLARGE, LumoUtility.Margin.NONE, LumoUtility.FontWeight.LIGHT);
+        title.addClassName("witch-view-title");
 
         layout.add(title);
         layout.setFlexGrow(1, title);
@@ -32,6 +38,8 @@ public final class ViewToolbar extends Composite<HorizontalLayout> {
         if (components.length > 0) {
             var actions = new HorizontalLayout(components);
             actions.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+            actions.setWrap(true);
+            actions.addClassName("witch-view-actions");
             layout.add(actions);
         }
     }

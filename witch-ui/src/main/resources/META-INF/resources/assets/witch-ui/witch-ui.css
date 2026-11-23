@@ -8,13 +8,45 @@
 
 /* Titel in der Kopfzeile: kuerzen statt ueberlaufen */
 .witch-title {
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-width: 0;
     margin: 0 var(--lumo-space-m);
     font-size: var(--lumo-font-size-l);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Kopfzeile darf umbrechen (Handy: View-Toolbar in zweiter Zeile) */
+vaadin-app-layout::part(navbar) {
+    flex-wrap: wrap;
+}
+
+/* Platz fuer die ViewToolbar der aktuellen View, rechts neben dem Anwendungstitel (MainLayout) */
+.witch-view-bar {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+.witch-view-bar .witch-view-toolbar {
+    padding: 0 var(--lumo-space-m) 0 0 !important;
+    border-bottom: none !important;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+.witch-view-bar .witch-view-title {
+    font-size: var(--lumo-font-size-l) !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    padding-inline-start: var(--lumo-space-m);
+    border-inline-start: 1px solid var(--lumo-contrast-20pct);
+}
+.witch-view-bar .witch-view-actions {
+    align-items: center;
+    flex-shrink: 0;
 }
 
 /* Feste Breite (z. B. setWidth("28em")) behalten, aber nie breiter als der Platz: Responsive.fit() */
@@ -67,6 +99,20 @@ img, video, svg, canvas {
     .witch-title {
         margin: 0 var(--lumo-space-s);
         font-size: var(--lumo-font-size-m);
+    }
+
+    /* View-Toolbar in eigener Zeile unter Menueknopf und Titel */
+    .witch-view-bar:not(:empty) {
+        flex-basis: 100%;
+        order: 10;
+        padding: 0 var(--lumo-space-s) var(--lumo-space-s);
+    }
+    .witch-view-bar .witch-view-toolbar {
+        flex-wrap: wrap;
+    }
+    .witch-view-bar .witch-view-title {
+        padding-inline-start: 0;
+        border-inline-start: none;
     }
 
     /* Hilfe: Inhaltsverzeichnis ueber dem Text */

@@ -1,9 +1,12 @@
 package de.witchcafe.ui;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -62,6 +65,11 @@ import de.witchcafe.ui.impressum.ImpressumView;
  * Ganz unten im Drawer stehen die Links "Hilfe" und "Impressum" (sofern eingeschaltet, siehe
  * {@link HelpPages} und {@link Impressum}); bei eingeschalteter Hilfe zusaetzlich ein
  * {@code ?}-Knopf rechts in der Kopfzeile, der die zur View passende Seite oeffnet ({@link Help}).
+ *
+ * Die {@link ViewToolbar} der aktuellen View (Seitentitel und Aktionen) wandert nach jedem
+ * Seitenwechsel in die Kopfzeile rechts neben den Anwendungstitel, damit oben kein Platz
+ * verschenkt wird. Auf dem Handy bricht sie dort in eine zweite Zeile um. Abschalten mit
+ * {@code witch-ui.toolbar-in-header=false}.
  */
 @Layout
 @StyleSheet("assets/witch-ui/witch-ui.css")
@@ -73,10 +81,17 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     private final Impressum impressum;
     private @Nullable Button helpButton;
     private String helpTarget = HelpView.ROUTE;
+    private final boolean toolbarInHeader;
+    /** Platz in der Kopfzeile fuer die ViewToolbar der aktuellen View. */
+    private final Div viewBar = new Div();
+    /** View, deren Toolbar gerade in {@link #viewBar} steht. */
+    private @Nullable Component viewBarOwner;
 
     public MainLayout(CurrentUser currentUser, AuthenticationContext authenticationContext,
                       HelpPages helpPages, Impressum impressum,
-                      @Value("${witch-ui.title:Moin {name}}") String title) {
+                      @Value("${witch-ui.title:Moin {name}}") String title,
+                      @Value("${witch-ui.toolbar-in-header:true}") boolean toolbarInHeader) {
+        this.toolbarInHeader = toolbarInHeader;
         this.authenticationContext = authenticationContext;
         this.helpPages = helpPages;
         this.impressum = impressum;
@@ -100,6 +115,10 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         // addToNavbar(true, ...) bedeutet: optimiert für Touch/Mobil
         addToNavbar(true, new DrawerToggle(), logo);
 
+        // Platz fuer Titel und Aktionen der aktuellen View (siehe afterNavigation)
+        viewBar.addClassName("witch-view-bar");
+        addToNavbar(true, viewBar);
+
         if (helpPages.isEnabled()) {
             helpButton = new Button(new Icon(VaadinIcon.QUESTION_CIRCLE_O),
                     e -> UI.getCurrent().navigate(helpTarget));
@@ -111,16 +130,57 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         }
     }
 
-    /** Hilfe-Knopf: Seite aus {@link Help} der aktuellen View, sonst die Hilfe-Startseite. */
+    /**
+     * Nach jedem Seitenwechsel: ViewToolbar der View in die Kopfzeile holen und den Hilfe-Knopf
+     * auf die Seite aus {@link Help} der aktuellen View setzen (sonst Hilfe-Startseite).
+     */
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
+        Component view = getContent();
+        if (toolbarInHeader) {
+            moveToolbarToHeader(view);
+        }
         if (helpButton == null) {
             return;
         }
-        Component view = getContent();
         Help help = view == null ? null : view.getClass().getAnnotation(Help.class);
         helpTarget = help == null ? HelpView.ROUTE
                 : helpPages.find(help.value()).map(p -> p.path()).orElse(HelpView.ROUTE);
+    }
+
+    /**
+     * Holt die erste {@link ViewToolbar} der View in die Kopfzeile. Bleibt dieselbe View-Instanz
+     * (z. B. nur ein anderer URL-Parameter), bleibt auch ihre Toolbar stehen.
+     */
+    private void moveToolbarToHeader(@Nullable Component view) {
+        if (view != null && view == viewBarOwner) {
+            return;
+        }
+        viewBar.removeAll();
+        viewBarOwner = null;
+        findToolbar(view).ifPresent(toolbar -> {
+            viewBar.add(toolbar);
+            viewBarOwner = view;
+        });
+    }
+
+    /** Sucht die erste ViewToolbar in den obersten Ebenen der View (Breitensuche, max. 3 Ebenen). */
+    static Optional<ViewToolbar> findToolbar(@Nullable Component view) {
+        if (view == null) {
+            return Optional.empty();
+        }
+        Deque<Component> level = new ArrayDeque<>(List.of(view));
+        for (int depth = 0; depth < 3 && !level.isEmpty(); depth++) {
+            Deque<Component> next = new ArrayDeque<>();
+            for (Component c : level) {
+                if (c instanceof ViewToolbar toolbar) {
+                    return Optional.of(toolbar);
+                }
+                c.getChildren().forEach(next::add);
+            }
+            level = next;
+        }
+        return Optional.empty();
     }
 
     /** Links "Hilfe" und "Impressum" unten im Drawer. */
