@@ -11,6 +11,8 @@ witch-ui/       Bibliothek mit der gemeinsamen Oberflaeche (Paket de.witchcafe.u
   ├── MainLayout                     AppLayout mit Menü (aus @Menu), Login-Link / Benutzermenü
   ├── ViewToolbar                    Kopfzeile für Views
   ├── Responsive                     Helfer fürs Smartphone (Grid, Dialog, FormLayout, Breiten)
+  ├── help/                          Hilfesystem: Markdown-Seiten unter witch-help/, Route hilfe, @Help
+  ├── impressum/                     Impressum (Route impressum), aus Properties oder eigener Datei
   └── admin/
       ├── UserAdminView              Benutzerverwaltung (Rolle ADMIN)
       └── ProviderCredentialsView    Status der OAuth-Provider (Rolle ADMIN)
@@ -75,7 +77,47 @@ Ein Upgrade von Vaadin, Spring Boot oder witch-auth passiert dann nur noch in `w
 witch-ui.title=Meine App              # Kopfzeile; {name} = angemeldeter Benutzer (Default "Moin {name}")
 witch-ui.admin.users.enabled=false    # eigene Benutzerverwaltung statt UserAdminView
 witch-ui.admin.providers.enabled=false
+witch-ui.impressum.enabled=false      # Impressum aus (Default an)
+witch-ui.help.enabled=false           # Hilfe aus (Default an, aber nur wenn es Hilfeseiten gibt)
 ```
+
+### Impressum
+
+Jede App bekommt unter `impressum` eine Seite, ohne Anmeldung erreichbar und unten im Menü verlinkt.
+Inhalt entweder aus einer eigenen Datei `src/main/resources/witch-ui/impressum.md` (Markdown) oder aus
+Properties, daraus entsteht ein Impressum nach § 5 DDG und § 18 Abs. 2 MStV:
+
+```properties
+witch-ui.impressum.name=Vorname Nachname
+witch-ui.impressum.address=Straße 1|12345 Ort     # Zeilen mit | trennen
+witch-ui.impressum.email=kontakt@example.org
+witch-ui.impressum.phone=+49 ...                  # optional
+witch-ui.impressum.responsible=...                # optional, Default = name
+witch-ui.impressum.text=...                       # optional, zusätzlicher Text (Markdown)
+witch-ui.impressum.disclaimer=false               # Haftungsausschluss weglassen (Default an)
+```
+
+Unter die Angaben setzt witch-ui einen Haftungsausschluss (Inhalte, Links, Urheberrecht) aus
+`witch-ui/impressum-haftung.md`; eine Datei gleichen Namens in der App ersetzt ihn.
+
+Auf dem Server gehen auch Umgebungsvariablen (`WITCH_UI_IMPRESSUM_NAME`, `WITCH_UI_IMPRESSUM_ADDRESS` …),
+z. B. in einer gemeinsamen `.env` für alle Docker-Apps.
+
+### Hilfe
+
+Hilfeseiten sind Markdown-Dateien unter `src/main/resources/witch-help/` – in der App und in jeder
+Bibliothek (witch-social, witch-billing …), alle werden eingesammelt:
+
+```
+witch-help/10-erste-schritte.md   -> hilfe/erste-schritte   (Zahl = Reihenfolge)
+witch-help/20-quiz-spielen.md     -> hilfe/quiz-spielen
+witch-help/faq.md                 -> hilfe/faq              (ohne Zahl ans Ende)
+```
+
+Die erste Überschrift `# …` ist der Titel im Inhaltsverzeichnis. Links zwischen Seiten:
+`[Quiz spielen](hilfe/quiz-spielen)`. Sobald es Seiten gibt, erscheinen unten im Menü der Link „Hilfe“
+und rechts in der Kopfzeile ein `?`-Knopf. Mit `@Help("quiz-spielen")` an einer View öffnet der Knopf
+dort direkt die passende Seite.
 
 Die App muss `de.witchcafe` scannen (`@ComponentScan`, `@EnableVaadin`, `vaadin.allowed-packages`),
 siehe `template/.../Application.java`.

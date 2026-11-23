@@ -9,6 +9,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import de.witchcafe.ui.ViewToolbar;
+import de.witchcafe.ui.help.Help;
 
 /**
  * Startseite der Basis-Anwendung. In einem neuen Projekt durch die eigene
@@ -18,6 +19,7 @@ import de.witchcafe.ui.ViewToolbar;
 @PageTitle("Start")
 @Menu(order = 0, icon = "vaadin:home", title = "Start")
 @AnonymousAllowed
+@Help("erste-schritte")
 public class HomeView extends Main {
 
     public HomeView() {

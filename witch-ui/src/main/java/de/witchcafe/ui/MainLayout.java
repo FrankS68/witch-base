@@ -11,10 +11,14 @@ import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.avatar.AvatarVariant;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Anchor;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -22,6 +26,8 @@ import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.menu.MenuConfiguration;
@@ -29,11 +35,17 @@ import com.vaadin.flow.server.menu.MenuEntry;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 
 import de.witchcafe.auth.AppUserInfo;
 import de.witchcafe.auth.CurrentUser;
 import de.witchcafe.auth.oauth2.OAuthLoginView;
+import de.witchcafe.ui.help.Help;
+import de.witchcafe.ui.help.HelpPages;
+import de.witchcafe.ui.help.HelpView;
+import de.witchcafe.ui.impressum.Impressum;
+import de.witchcafe.ui.impressum.ImpressumView;
 
 /**
  * Gemeinsames App-Layout: Kopfzeile, Menue aus allen {@code @Menu}-Views (nach
@@ -46,17 +58,28 @@ import de.witchcafe.auth.oauth2.OAuthLoginView;
  * {@code {name}} wird durch den Namen des angemeldeten Benutzers bzw. "Gast" ersetzt.
  *
  * Laedt {@code witch-ui.css} mit den Regeln fuer schmale Bildschirme, siehe {@link Responsive}.
+ *
+ * Ganz unten im Drawer stehen die Links "Hilfe" und "Impressum" (sofern eingeschaltet, siehe
+ * {@link HelpPages} und {@link Impressum}); bei eingeschalteter Hilfe zusaetzlich ein
+ * {@code ?}-Knopf rechts in der Kopfzeile, der die zur View passende Seite oeffnet ({@link Help}).
  */
 @Layout
 @StyleSheet("assets/witch-ui/witch-ui.css")
 @AnonymousAllowed
-public class MainLayout extends AppLayout {
+public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private final AuthenticationContext authenticationContext;
+    private final HelpPages helpPages;
+    private final Impressum impressum;
+    private @Nullable Button helpButton;
+    private String helpTarget = HelpView.ROUTE;
 
     public MainLayout(CurrentUser currentUser, AuthenticationContext authenticationContext,
+                      HelpPages helpPages, Impressum impressum,
                       @Value("${witch-ui.title:Moin {name}}") String title) {
         this.authenticationContext = authenticationContext;
+        this.helpPages = helpPages;
+        this.impressum = impressum;
 
         // 1. Navbar Bereich (oben)
         createHeader(currentUser, title);
@@ -64,6 +87,7 @@ public class MainLayout extends AppLayout {
         // 2. Drawer Bereich (seitlich / mobil einklappbar)
         createDrawer();
         addToDrawer(currentUser.get().map(this::createUserMenu).orElseGet(this::createLoginLink));
+        createFooter();
     }
 
     private void createHeader(CurrentUser currentUser, String title) {
@@ -75,6 +99,43 @@ public class MainLayout extends AppLayout {
         // Der DrawerToggle ist der "Hamburger"-Button für Mobilgeräte
         // addToNavbar(true, ...) bedeutet: optimiert für Touch/Mobil
         addToNavbar(true, new DrawerToggle(), logo);
+
+        if (helpPages.isEnabled()) {
+            helpButton = new Button(new Icon(VaadinIcon.QUESTION_CIRCLE_O),
+                    e -> UI.getCurrent().navigate(helpTarget));
+            helpButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY_INLINE, ButtonVariant.LUMO_ICON);
+            helpButton.addClassName("witch-help-button");
+            helpButton.setAriaLabel("Hilfe");
+            helpButton.setTooltipText("Hilfe");
+            addToNavbar(true, helpButton);
+        }
+    }
+
+    /** Hilfe-Knopf: Seite aus {@link Help} der aktuellen View, sonst die Hilfe-Startseite. */
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        if (helpButton == null) {
+            return;
+        }
+        Component view = getContent();
+        Help help = view == null ? null : view.getClass().getAnnotation(Help.class);
+        helpTarget = help == null ? HelpView.ROUTE
+                : helpPages.find(help.value()).map(p -> p.path()).orElse(HelpView.ROUTE);
+    }
+
+    /** Links "Hilfe" und "Impressum" unten im Drawer. */
+    private void createFooter() {
+        var footer = new Div();
+        footer.addClassName("witch-drawer-footer");
+        if (helpPages.isEnabled()) {
+            footer.add(new Anchor(HelpView.ROUTE, "Hilfe"));
+        }
+        if (impressum.isEnabled()) {
+            footer.add(new Anchor(ImpressumView.ROUTE, "Impressum"));
+        }
+        if (footer.getComponentCount() > 0) {
+            addToDrawer(footer);
+        }
     }
 
     private void createDrawer() {

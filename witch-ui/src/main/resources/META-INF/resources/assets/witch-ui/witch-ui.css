@@ -22,6 +22,38 @@
     max-width: 100% !important;
 }
 
+/* Hilfe-Knopf rechts in der Kopfzeile */
+.witch-help-button {
+    margin-inline-end: var(--lumo-space-m);
+    font-size: var(--lumo-icon-size-m);
+}
+
+/* Links "Hilfe" / "Impressum" unten im Drawer */
+.witch-drawer-footer {
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lumo-space-m);
+    padding: var(--lumo-space-s) var(--lumo-space-m) var(--lumo-space-m);
+    font-size: var(--lumo-font-size-s);
+}
+.witch-drawer-footer a {
+    color: var(--lumo-secondary-text-color);
+}
+
+/* Textseiten (Impressum) und Hilfe: lesbare Zeilenlaenge */
+.witch-text-page {
+    padding: var(--lumo-space-m);
+    max-width: 48em;
+}
+.witch-help {
+    display: grid;
+    grid-template-columns: 14em minmax(0, 48em);
+    gap: var(--lumo-space-l);
+    padding: var(--lumo-space-m);
+    align-items: start;
+}
+
 /* Bilder und Medien nie breiter als ihr Platz */
 img, video, svg, canvas {
     max-width: 100%;
@@ -35,6 +67,16 @@ img, video, svg, canvas {
     .witch-title {
         margin: 0 var(--lumo-space-s);
         font-size: var(--lumo-font-size-m);
+    }
+
+    /* Hilfe: Inhaltsverzeichnis ueber dem Text */
+    .witch-help {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--lumo-space-s);
+    }
+
+    .witch-help-button {
+        margin-inline-end: var(--lumo-space-s);
     }
 }
 
